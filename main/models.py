@@ -1,20 +1,23 @@
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import classification_report
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 
 root = pd.read_csv("processed_cleveland.csv")
-df = root.dropna()
+df = root.replace('?', np.nan).dropna().astype(float)
 df['target'] = (df['num'] > 0).astype(int)
 
 X = df.drop(columns=['trestbps', 'chol', 'fbs', 'restecg', 'target', 'num'])
 y = df['target']
 
 X_train, X_test, y_train, y_test = train_test_split(
-  X, y, test_size=0.2, stratify=y, random_state=42
+  X, y,
+  test_size=0.2,
+  stratify=y,
+  random_state=42
 )
 
 scaler = StandardScaler()
@@ -22,27 +25,33 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 
-MODELS = []
+class Model:
+  def __init__(self, name: str, model: any):
+    self.name = name
+    self.model = model
+  
+  def predict(self, X: any):
+    return self.model.predict(scaler.transform(X))
 
-knn = KNeighborsClassifier(5)
+knn = KNeighborsClassifier(3)
 knn.fit(X_train_scaled, y_train)
-knn_preds = knn.predict(X_test_scaled)
 
 dec_tree = DecisionTreeClassifier(
-  max_depth=10,
   criterion='gini',
+  max_depth=3,
   random_state=42
 )
 dec_tree.fit(X_train_scaled, y_train)
-dec_tree_preds = dec_tree.predict(X_test_scaled)
 
-rf = RandomForestClassifier(
-  n_estimators=100,
-  max_depth=5,
-  criterion='gini',
+logistic = LogisticRegression(
+  solver='liblinear',
+  max_iter=1000,
   random_state=42
 )
-rf.fit(X_train_scaled, y_train)
-rf_preds = rf.predict(X_test_scaled)
+logistic.fit(X_train_scaled, y_train)
 
-print(classification_report(y_test, knn_preds))
+MODELS = [
+  Model("KNN", knn),
+  Model("Decision Tree", dec_tree),
+  Model("Logistic Regression", logistic)
+]
