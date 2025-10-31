@@ -3,45 +3,45 @@ import { z } from "zod";
 export const heartFeatureSchema = z.object({
   age: z.coerce
     .number()
-    .min(1, "Age must be positive")
-    .max(120, "Age seems unrealistic"),
+    .min(1, "Tuổi phải lớn hơn 0")
+    .max(120, "Tuổi có vẻ không hợp lý"),
   sex: z.coerce
     .number()
-    .int("Sex must be an integer")
+    .int("Giới tính phải là số nguyên")
     .min(0)
-    .max(1, "Use 0 for female, 1 for male"),
+    .max(1, "Giới hạn 0 cho nữ, 1 cho nam"),
   cp: z.coerce
     .number()
-    .int("Chest pain type must be an integer")
-    .min(0)
+    .int("Loại đau ngực phải là số nguyên")
+    .min(1)
     .max(4),
   thalach: z.coerce
     .number()
-    .min(60, "Value seems too low")
-    .max(250, "Value seems too high"),
+    .min(60, "Giá trị có vẻ quá thấp")
+    .max(250, "Giá trị có vẻ quá cao"),
   exang: z.coerce
     .number()
-    .int("Value must be an integer")
+    .int("Giá trị phải là số nguyên")
     .min(0)
     .max(1),
   oldpeak: z.coerce
     .number()
     .min(0)
-    .max(7, "Value seems too high"),
+    .max(7, "Giá trị có vẻ quá cao"),
   slope: z.coerce
     .number()
-    .int("Slope must be an integer")
-    .min(0)
+    .int("Độ dốc phải là số nguyên")
+    .min(1)
     .max(3),
   ca: z.coerce
     .number()
-    .int("Value must be an integer")
+    .int("Giá trị phải là số nguyên")
     .min(0)
-    .max(4),
+    .max(3),
   thal: z.coerce
     .number()
-    .int("Value must be an integer")
-    .min(0)
+    .int("Giá trị phải là số nguyên")
+    .min(3)
     .max(7),
 });
 
@@ -60,13 +60,13 @@ export const defaultHeartFeatures: HeartFeatureValues = {
 };
 
 export const HEART_FEATURE_DESCRIPTIONS = {
-  age: "Age (years)",
-  sex: "Sex (0 = female, 1 = male)",
-  cp: "Chest pain type (1-4)",
-  thalach: "Maximum heart rate achieved",
-  exang: "Exercise-induced angina (0 = no, 1 = yes)",
-  oldpeak: "ST depression induced by exercise",
-  slope: "Slope of peak exercise ST segment (1-3)",
-  ca: "Number of major vessels (0-3)",
-  thal: "Thalassemia (3 = normal, 6 = fixed defect, 7 = reversible defect)",
+  age: "Tuổi (năm)",
+  sex: "Giới tính (0 = nữ, 1 = nam)",
+  cp: "Phân loại đau ngực (1-4)",
+  thalach: "Nhịp tim tối đa đạt được",
+  exang: "Đau thắt ngực do gắng sức (0 = không, 1 = có)",
+  oldpeak: "Độ chênh ST do gắng sức",
+  slope: "Độ dốc đoạn ST khi gắng sức (1-3)",
+  ca: "Số lượng mạch vành lớn (0-3)",
+  thal: "Chỉ số thalassemia (3 = bình thường, 6 = tổn thương cố định, 7 = tổn thương hồi phục)",
 } as const;

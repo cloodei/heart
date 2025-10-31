@@ -3,5 +3,10 @@
   "version": "1.0.0",
   "description": "Heart disease prediction",
   "scripts": {
+    "dev": "cd example && bun run dev",
+    "start": "cd main && bun run start",
+    "down": "bun run install:example && bun run install:main",
+    "install:example": "cd example && bun install",
+    "install:main": "cd main && uv sync"
   }
 }

@@ -10,41 +10,41 @@ import { type ModelPrediction, requestPredictions } from "@/lib/api";
 import { type HeartFeatureValues, HEART_FEATURE_DESCRIPTIONS, defaultHeartFeatures, heartFeatureSchema } from "@/lib/schema";
 
 const TARGET_LABELS: Record<string, string> = {
-  "0": "No Heart Disease",
-  "1": "Heart Disease",
+  "0": "Không mắc bệnh tim",
+  "1": "Có dấu hiệu bệnh tim",
 };
 
 const FIELD_CONFIG = {
   age: {
-    label: "Age",
+    label: "Tuổi",
     hint: HEART_FEATURE_DESCRIPTIONS.age,
     step: "1",
     min: 1,
     max: 120,
   },
   sex: {
-    label: "Sex",
+    label: "Giới tính",
     hint: HEART_FEATURE_DESCRIPTIONS.sex,
     step: "1",
     min: 0,
     max: 1,
   },
   cp: {
-    label: "Chest Pain Type",
+    label: "Phân loại đau ngực",
     hint: HEART_FEATURE_DESCRIPTIONS.cp,
     step: "1",
     min: 1,
     max: 4,
   },
   thalach: {
-    label: "Max Heart Rate",
+    label: "Nhịp tim tối đa",
     hint: HEART_FEATURE_DESCRIPTIONS.thalach,
     step: "1",
     min: 60,
     max: 250,
   },
   exang: {
-    label: "Exercise-Induced Angina",
+    label: "Đau thắt ngực do gắng sức",
     hint: HEART_FEATURE_DESCRIPTIONS.exang,
     step: "1",
     min: 0,
@@ -58,14 +58,14 @@ const FIELD_CONFIG = {
     max: 7,
   },
   slope: {
-    label: "Slope",
+    label: "Độ dốc ST",
     hint: HEART_FEATURE_DESCRIPTIONS.slope,
     step: "1",
     min: 1,
     max: 3,
   },
   ca: {
-    label: "Major Vessels",
+    label: "Số mạch vành lớn",
     hint: HEART_FEATURE_DESCRIPTIONS.ca,
     step: "1",
     min: 0,
@@ -75,9 +75,9 @@ const FIELD_CONFIG = {
     label: "Thalassemia",
     hint: HEART_FEATURE_DESCRIPTIONS.thal,
     step: "1",
-    min: 0,
+    min: 3,
     max: 7,
-  },
+  }
 } as const;
 
 function formatPercent(value?: number) {
@@ -89,7 +89,7 @@ function formatPercent(value?: number) {
 
 function formatConfidence(value?: number) {
   if (value === undefined || Number.isNaN(value))
-    return "Not available";
+    return "Không khả dụng";
 
   return `${(value * 100).toFixed(2)}%`;
 }
@@ -116,23 +116,17 @@ export function Predictor() {
       setResults(response);
     }
     catch (error) {
-      const message = error instanceof Error ? error.message : "Prediction failed";
+      const message = error instanceof Error ? error.message : "Dự đoán thất bại";
       setServerError(message);
     }
   };
 
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <Card className="border-border/70 bg-card backdrop-blur">
+      <Card className="bg-card backdrop-blur gap-3">
         <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-2xl md:text-3xl">
-            <span className="inline-flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
-              <Activity className="h-5 w-5" />
-            </span>
-            Predict Heart Disease Risk
-          </CardTitle>
           <CardDescription>
-            Provide patient measurements and compare outputs from logistic regression, decision tree, and k-nearest neighbours models.
+            Nhập các chỉ số bệnh nhân và so sánh kết quả từ các mô hình Hồi Quy Logistic, Cây Quyết Định và KNN.
           </CardDescription>
         </CardHeader>
 
@@ -165,20 +159,20 @@ export function Predictor() {
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                <Info className="h-4 w-4" />
-                Outputs are binary (0 = healthy, 1 = heart disease). Confidence is derived from the model's probabilities when available.
+                <Info className="size-4" />
+                Kết quả ở dạng nhị phân (0 = bình thường, 1 = mắc bệnh). Độ tin cậy được tính từ xác suất của từng mô hình (nếu có).
               </div>
               <div className="flex gap-3">
                 <Button type="button" variant="ghost" onClick={() => reset(defaultHeartFeatures)}>
-                  Reset defaults
+                  Reset
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} className="rounded-lg bg-linear-to-b from-emerald-400 to-emerald-600 text-neutral-100 font-medium">
                   {isSubmitting ? (
                     <span className="inline-flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" /> Predicting...
+                      <Loader2 className="size-4 animate-spin" /> Đang dự đoán...
                     </span>
                   ) : (
-                    "Predict"
+                    "Dự đoán"
                   )}
                 </Button>
               </div>
@@ -193,7 +187,7 @@ export function Predictor() {
 
           {results && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Model predictions</h3>
+              <h3 className="text-lg font-semibold">Kết quả theo từng mô hình</h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {results.map((model) => {
                   const firstPrediction = model.predictions[0];
@@ -207,27 +201,27 @@ export function Predictor() {
                       <CardHeader>
                         <CardTitle className="text-xl">{model.model}</CardTitle>
                         <CardDescription>
-                          Accuracy: {formatPercent(model.metrics.accuracy ?? undefined)}
+                          Độ chính xác của mô hình: {formatPercent(model.metrics.accuracy ?? undefined)}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="rounded-lg border bg-background/50 p-4">
-                          <p className="text-sm text-muted-foreground">Predicted class</p>
+                          <p className="text-sm text-muted-foreground">Nhãn dự đoán</p>
                           <p className="text-2xl font-semibold">
-                            {firstPrediction.label} · {TARGET_LABELS[String(firstPrediction.label)] ?? "Unknown"}
+                            {firstPrediction.label} · {TARGET_LABELS[String(firstPrediction.label)] ?? "Không rõ"}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            Confidence: {formatConfidence(firstPrediction.confidence)}
+                            Độ tin cậy: {formatConfidence(firstPrediction.confidence)}
                           </p>
                         </div>
 
                         {probabilityEntries.length > 0 && (
                           <div className="space-y-2">
-                            <p className="text-sm font-medium">Probability distribution</p>
+                            <p className="text-sm font-medium">Phân bố xác suất</p>
                             <div className="space-y-2">
                               {probabilityEntries.map(([label, probability]) => (
                                 <div key={label} className="flex items-center justify-between rounded-md border bg-background/40 px-3 py-2 text-sm">
-                                  <span>{label} · {TARGET_LABELS[label] ?? "Unknown"}</span>
+                                  <span>{label} · {TARGET_LABELS[label] ?? "Không rõ"}</span>
                                   <span className="font-semibold">{formatPercent(probability)}</span>
                                 </div>
                               ))}

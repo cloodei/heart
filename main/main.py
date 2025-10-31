@@ -2,16 +2,16 @@ from typing import Any, Dict, List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from models import FEATURE_COLUMNS, MODELS
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(
-  title="Heart Disease Prediction API",
-  description=(
-    "Serve predictions from multiple scikit-learn models trained on the "
-    "Cleveland heart disease dataset."
-  ),
-  version="0.1.0"
+app = FastAPI()
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=["*"],
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"]
 )
-
 
 class HeartFeatures(BaseModel):
   age: float = Field(..., ge=0, description="Age in years")

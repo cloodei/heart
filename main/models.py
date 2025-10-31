@@ -41,61 +41,47 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 
-def _ensure_feature_frame(data: Any) -> pd.DataFrame:
-  if isinstance(data, pd.DataFrame):
-    frame = data.copy()
-  elif isinstance(data, dict):
-    frame = pd.DataFrame([data])
-  else:
-    arr = np.asarray(data, dtype=float)
-    if arr.ndim == 1:
-      arr = arr.reshape(1, -1)
-    if arr.shape[1] != len(FEATURE_COLUMNS):
-      raise ValueError(
-        f'Expected {len(FEATURE_COLUMNS)} feature values, but received shape {arr.shape}.'
-      )
-    frame = pd.DataFrame(arr, columns=FEATURE_COLUMNS)
-  return frame[FEATURE_COLUMNS].astype(float)
-
-
-def _coerce_label(value: Any) -> Any:
-  if isinstance(value, np.generic):
-    return value.item()
-  return value
-
-
 class Model:
   def __init__(self, name: str, model: Any, metrics: Optional[Dict[str, float]] = None):
     self.name = name
     self.model = model
     self.metrics = metrics or {}
 
-  def _transform(self, X: Any) -> Tuple[pd.DataFrame, np.ndarray]:
-    frame = _ensure_feature_frame(X)
-    X_scaled = scaler.transform(frame)
-    return frame, X_scaled
+  def _scale(self, records: List[Dict[str, Any]]) -> np.ndarray:
+    if not records:
+      raise ValueError('No input records provided.')
 
-  def predict(self, X: Any):
-    _, X_scaled = self._transform(X)
+    frame = pd.DataFrame(records)
+    missing = [column for column in FEATURE_COLUMNS if column not in frame.columns]
+    if missing:
+      raise ValueError(f'Missing features: {", ".join(missing)}')
+
+    try:
+      numeric = frame[FEATURE_COLUMNS].astype(float)
+    except ValueError as exc:
+      raise ValueError('All feature values must be numeric.') from exc
+
+    return scaler.transform(numeric)
+
+  def predict(self, records: List[Dict[str, Any]]):
+    X_scaled = self._scale(records)
     return self.model.predict(X_scaled)
 
-  def predict_proba(self, X: Any):
+  def predict_proba(self, records: List[Dict[str, Any]]):
     if not hasattr(self.model, 'predict_proba'):
       return None
-    _, X_scaled = self._transform(X)
+    X_scaled = self._scale(records)
     return self.model.predict_proba(X_scaled)
 
-  def predict_with_details(self, X: Any):
-    frame, X_scaled = self._transform(X)
+  def predict_with_details(self, records: List[Dict[str, Any]]):
+    X_scaled = self._scale(records)
     predictions = self.model.predict(X_scaled)
-    probabilities = None
-    if hasattr(self.model, 'predict_proba'):
-      probabilities = self.model.predict_proba(X_scaled)
+    probabilities = self.model.predict_proba(X_scaled) if hasattr(self.model, 'predict_proba') else None
     classes = list(getattr(self.model, 'classes_', [])) if probabilities is not None else []
 
     details = []
     for index, raw_pred in enumerate(predictions):
-      pred_label = _coerce_label(raw_pred)
+      pred_label = raw_pred.item() if isinstance(raw_pred, np.generic) else raw_pred
       entry: Dict[str, Any] = {
         'label': pred_label,
       }
@@ -103,7 +89,7 @@ class Model:
       if probabilities is not None:
         probs = probabilities[index]
         prob_map = {
-          str(_coerce_label(classes[class_index])): float(prob_value)
+          str(classes[class_index].item() if isinstance(classes[class_index], np.generic) else classes[class_index]): float(prob_value)
           for class_index, prob_value in enumerate(probs)
         }
         entry['confidence'] = max(prob_map.values())
