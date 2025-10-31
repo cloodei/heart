@@ -158,10 +158,10 @@ MODELS = [
     }
   ),
   Model(
-    "Decision Tree",
-    dec_tree,
+    "Stacking Classifier",
+    stacking_model,
     metrics={
-      'accuracy': float(accuracy_score(y_test, dec_tree.predict(X_test_scaled)))
+      'accuracy': float(accuracy_score(y_test, stacking_model.predict(X_test_scaled)))
     }
   ),
   Model(
@@ -172,10 +172,10 @@ MODELS = [
     }
   ),
   Model(
-    "Stacking Classifier",
-    stacking_model,
+    "Decision Tree",
+    dec_tree,
     metrics={
-      'accuracy': float(accuracy_score(y_test, stacking_model.predict(X_test_scaled)))
+      'accuracy': float(accuracy_score(y_test, dec_tree.predict(X_test_scaled)))
     }
-  )
+  ),
 ]

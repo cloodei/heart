@@ -12,7 +12,7 @@ export default function Home() {
           <div className="space-y-2">
             <h1 className="text-4xl font-bold font-heading tracking-tighter">
               <span className="bg-linear-to-r from-foreground via-primary/75 to-foreground bg-clip-text text-transparent">
-                Dự đoán bệnh tim
+                Dự đoán bệnh <span className="text-red-500">❤️</span>
               </span>
             </h1>
 
