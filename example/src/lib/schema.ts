@@ -62,11 +62,11 @@ export const defaultHeartFeatures: HeartFeatureValues = {
 export const HEART_FEATURE_DESCRIPTIONS = {
   age: "Tuổi (năm)",
   sex: "Giới tính (0 = nữ, 1 = nam)",
-  cp: "Phân loại đau ngực (1-4)",
+  cp: "Phân loại đau ngực (1: 'Đau thắt ngực điển hình', 2: 'Đau thắt ngực không điển hình', 3: 'Đau không do tim', 4: 'Không có triệu chứng')",
   thalach: "Nhịp tim tối đa đạt được",
   exang: "Đau thắt ngực do gắng sức (0 = không, 1 = có)",
-  oldpeak: "Độ chênh ST do gắng sức",
-  slope: "Độ dốc đoạn ST khi gắng sức (1-3)",
-  ca: "Số lượng mạch vành lớn (0-3)",
+  oldpeak: "Độ chênh ST do gắng sức so với khi nghỉ",
+  slope: "Độ dốc đoạn ST khi gắng sức cực đại (1: 'dốc lên', 2: 'phẳng', 3: 'dốc xuống')",
+  ca: "Số lượng mạch máu lớn (0-3) được nhuộm hiển thị bằng huỳnh quang",
   thal: "Chỉ số thalassemia (3 = bình thường, 6 = tổn thương cố định, 7 = tổn thương hồi phục)",
 } as const;

@@ -87,13 +87,6 @@ function formatPercent(value?: number) {
   return `${(value * 100).toFixed(1)}%`;
 }
 
-function formatConfidence(value?: number) {
-  if (value === undefined || Number.isNaN(value))
-    return "Không khả dụng";
-
-  return `${(value * 100).toFixed(2)}%`;
-}
-
 export function Predictor() {
   const [results, setResults] = useState<ModelPrediction[] | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -194,10 +187,8 @@ export function Predictor() {
                   if (!firstPrediction)
                     return null;
 
-                  const probabilityEntries = Object.entries(firstPrediction.probabilities ?? {});
-
                   return (
-                    <Card key={model.model} className="border-border/60">
+                    <Card key={model.model} className="border-border/60 bg-card">
                       <CardHeader>
                         <CardTitle className="text-xl">{model.model}</CardTitle>
                         <CardDescription>
@@ -205,29 +196,12 @@ export function Predictor() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="rounded-lg border bg-background/50 p-4">
+                        <div>
                           <p className="text-sm text-muted-foreground">Nhãn dự đoán</p>
                           <p className="text-2xl font-semibold">
-                            {firstPrediction.label} · {TARGET_LABELS[String(firstPrediction.label)] ?? "Không rõ"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Độ tin cậy: {formatConfidence(firstPrediction.confidence)}
+                            {firstPrediction.label} - {TARGET_LABELS[String(firstPrediction.label)] ?? "Không rõ"}
                           </p>
                         </div>
-
-                        {probabilityEntries.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium">Phân bố xác suất</p>
-                            <div className="space-y-2">
-                              {probabilityEntries.map(([label, probability]) => (
-                                <div key={label} className="flex items-center justify-between rounded-md border bg-background/40 px-3 py-2 text-sm">
-                                  <span>{label} · {TARGET_LABELS[label] ?? "Không rõ"}</span>
-                                  <span className="font-semibold">{formatPercent(probability)}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </CardContent>
                     </Card>
                   );
