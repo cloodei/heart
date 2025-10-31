@@ -5,7 +5,7 @@ import { ThemeToggler } from "./components/theme-toggle";
 export default function Home() {
   return (
     <div className="relative overflow-hidden">
-      <ThemeToggler className="absolute top-4 right-4" />
+      <ThemeToggler className="absolute top-4 right-4 z-10" />
 
       <div className="mt-8 relative space-y-4">
         <div className="text-center space-y-3">

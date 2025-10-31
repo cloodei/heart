@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
+from typing import Any, Dict, List, Optional
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import StackingClassifier
 from sklearn.linear_model import LogisticRegression
-from typing import Any, Dict, List, Optional, Tuple
 
 root = pd.read_csv("processed_cleveland.csv")
 df = root.replace('?', np.nan).dropna().astype(float)
@@ -36,9 +37,24 @@ X_train, X_test, y_train, y_test = train_test_split(
   random_state=42
 )
 
+X_train_handled = X_train.copy()
+X_test_handled = X_test.copy()
+
+continuous_features = ['age','thalach', 'oldpeak'] 
+for col in continuous_features:
+    Q1 = X_train_handled[col].quantile(0.25)
+    Q3 = X_train_handled[col].quantile(0.75)
+    IQR = Q3 - Q1
+    
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+
+    X_train_handled[col] = X_train_handled[col].clip(lower_bound, upper_bound)
+    X_test_handled[col] = X_test_handled[col].clip(lower_bound, upper_bound)
+
 scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+X_train_scaled = scaler.fit_transform(X_train_handled)
+X_test_scaled = scaler.transform(X_test_handled)
 
 
 class Model:
@@ -103,18 +119,35 @@ knn = KNeighborsClassifier(3)
 knn.fit(X_train_scaled, y_train)
 
 dec_tree = DecisionTreeClassifier(
-  criterion='gini',
-  max_depth=3,
+  criterion='entropy',
+  max_depth=3,     
   random_state=42
 )
 dec_tree.fit(X_train_scaled, y_train)
 
 logistic = LogisticRegression(
   solver='liblinear',
-  max_iter=1000,
-  random_state=42
+  penalty="l2",
+  C=0.01,
+  random_state=42,
+  max_iter=10000
 )
 logistic.fit(X_train_scaled, y_train)
+
+meta_model = LogisticRegression(C=0.01, solver='liblinear', penalty='l2',max_iter=1000)
+
+stacking_model = StackingClassifier(
+  estimators=[
+    ('knn', knn),
+    ('decision_tree', dec_tree),
+    ('logistic_regression', logistic)
+  ],
+  final_estimator=meta_model,
+  passthrough=False,
+  cv=5
+)
+
+stacking_model.fit(X_train_scaled, y_train)
 
 MODELS = [
   Model(
@@ -136,6 +169,13 @@ MODELS = [
     logistic,
     metrics={
       'accuracy': float(accuracy_score(y_test, logistic.predict(X_test_scaled)))
+    }
+  ),
+  Model(
+    "Stacking Classifier",
+    stacking_model,
+    metrics={
+      'accuracy': float(accuracy_score(y_test, stacking_model.predict(X_test_scaled)))
     }
   )
 ]
